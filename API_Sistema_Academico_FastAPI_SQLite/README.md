@@ -137,6 +137,7 @@ Todos estos endpoints usan el prefijo `/api/v1`.
 | GET / PUT / DELETE | `/carreras/{id}` | Consultar, modificar o eliminar |
 | GET / POST | `/estudiantes` | Listar, buscar o crear estudiantes |
 | GET / PUT / DELETE | `/estudiantes/{id}` | CRUD por ID |
+| GET | `/estudiantes/{id}/matriculas` | Reto opcional: Cursos matriculados de un estudiante |
 | GET / POST | `/docentes` | Listar o crear docentes |
 | GET / POST | `/asignaturas` | Listar o crear asignaturas |
 | GET / POST | `/periodos` | Listar o crear períodos |
