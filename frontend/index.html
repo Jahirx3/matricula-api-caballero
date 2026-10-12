@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema Académico</title>
+  <link rel="stylesheet" href="/styles.css?v=2" />
+</head>
+
+<body>
+
+  <!-- ===================== VISTA: LOGIN ===================== -->
+  <section id="vista-login" class="vista vista-login">
+    <div class="tarjeta-login">
+      <p class="etiqueta">PROGRAMACIÓN III · PROYECTO DE CURSO</p>
+      <h1>Sistema Académico</h1>
+      <p class="subtitulo">Inicia sesión para ver el panel general.</p>
+
+      <form id="formulario-login">
+        <label for="campo-usuario">Usuario</label>
+        <input id="campo-usuario" type="text" autocomplete="username" required />
+
+        <label for="campo-clave">Contraseña</label>
+        <input id="campo-clave" type="password" autocomplete="current-password" required />
+
+        <button type="submit" id="boton-entrar">Iniciar sesión</button>
+      </form>
+
+      <p id="mensaje-login" class="mensaje-error" aria-live="polite"></p>
+
+      <div class="ayuda-usuarios">
+        <p>Usuarios de prueba:</p>
+        <code>admin / admin123</code> · <code>docente / docente123</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VISTA: DASHBOARD ==================== -->
+  <section id="vista-dashboard" class="vista vista-dashboard oculto">
+
+    <!-- 1. BARRA LATERAL (SIDEBAR) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icono">🎓</div>
+        <div>
+          <h2 class="sidebar-titulo">Académico</h2>
+          <span class="sidebar-subtitulo">v2.0 · FastAPI</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- Grupo: General -->
+        <p class="grupo-titulo">GENERAL</p>
+        <a href="#dashboard" class="nav-item activo" data-seccion="dashboard">
+          <span class="icono">📊</span>
+          <span>Panel General</span>
+        </a>
+
+        <!-- Grupo: Personas -->
+        <p class="grupo-titulo">PERSONAS</p>
+        <a href="#estudiantes" class="nav-item" data-seccion="estudiantes">
+          <span class="icono">👨‍🎓</span>
+          <span>Estudiantes</span>
+        </a>
+        <a href="#docentes" class="nav-item" data-seccion="docentes">
+          <span class="icono">👨‍🏫</span>
+          <span>Docentes</span>
+        </a>
+
+        <!-- Grupo: Oferta Académica -->
+        <p class="grupo-titulo">ACADÉMICO</p>
+        <a href="#carreras" class="nav-item" data-seccion="carreras">
+          <span class="icono">🏛️</span>
+          <span>Carreras</span>
+        </a>
+
+
+        <a href="#aulas" class="nav-item" data-seccion="aulas">
+          <span class="icono">🏫</span>
+          <span>Aulas</span>
+        </a>
+
+        <!-- Grupo: Operaciones -->
+        <p class="grupo-titulo">OPERACIONES</p>
+        <a href="#secciones" class="nav-item" data-seccion="secciones">
+          <span class="icono">👥</span>
+          <span>Secciones</span>
+        </a>
+        <a href="#matriculas" class="nav-item" data-seccion="matriculas">
+          <span class="icono">📝</span>
+          <span>Matrículas</span>
+        </a>
+
+    </aside>
+
+    <!-- 2. CONTENIDO DERECHO -->
+    <div class="panel-derecho">
+      <header class="barra-superior">
+        <div>
+          <p class="etiqueta" id="subtitulo-seccion">SISTEMA ACADÉMICO</p>
+          <h1 id="titulo-seccion-actual">Panel general</h1>
+        </div>
+        <div class="acciones-barra">
+          <span id="chip-usuario" class="chip-usuario"></span>
+          <button id="boton-actualizar" class="boton-secundario">Actualizar</button>
+          <button id="boton-salir" class="boton-secundario">Cerrar sesión</button>
+        </div>
+      </header>
+
+      <main class="contenido">
+        <!-- SECCIÓN: DASHBOARD (INDICADORES) -->
+        <div id="seccion-dashboard" class="seccion-modulo">
+          <section class="fila-tarjetas" id="fila-tarjetas" aria-label="Indicadores generales"></section>
+          <p id="texto-periodo" class="texto-periodo"></p>
+        </div>
+
+        <!-- SECCIÓN: ESTUDIANTES -->
+        <div id="seccion-estudiantes" class="seccion-modulo oculto">
+          <section class="tarjeta tarjeta-formulario">
+            <div class="encabezado-tarjeta">
+              <h2 id="titulo-formulario">Nuevo estudiante</h2>
+            </div>
+
+            <form id="formulario-estudiante" class="rejilla-formulario">
+              <input type="hidden" id="estudiante-id" />
+
+              <div class="campo">
+                <label for="estudiante-nombres">Nombres</label>
+                <input id="estudiante-nombres" required minlength="2" maxlength="80" />
+              </div>
+              <div class="campo">
+                <label for="estudiante-apellidos">Apellidos</label>
+                <input id="estudiante-apellidos" required minlength="2" maxlength="80" />
+              </div>
+
+              <div class="campo">
+                <label for="estudiante-cuenta">Número de cuenta</label>
+                <input id="estudiante-cuenta" required minlength="5" maxlength="20" placeholder="20261005" />
+              </div>
+              <div class="campo">
+                <label for="estudiante-correo">Correo</label>
+                <input id="estudiante-correo" type="email" required placeholder="nombre@universidad.edu" />
+              </div>
+
+              <div class="campo">
+                <label for="estudiante-telefono">Teléfono (opcional)</label>
+                <input id="estudiante-telefono" maxlength="25" placeholder="9999-0000" />
+              </div>
+              <div class="campo">
+                <label for="estudiante-nacimiento">Fecha de nacimiento</label>
+                <input id="estudiante-nacimiento" type="date" required />
+              </div>
+
+              <div class="campo">
+                <label for="estudiante-carrera">Carrera</label>
+                <select id="estudiante-carrera" required></select>
+              </div>
+              <div class="campo">
+                <label for="estudiante-estado">Estado</label>
+                <select id="estudiante-estado">
+                  <option value="ACTIVO">Activo</option>
+                  <option value="INACTIVO">Inactivo</option>
+                  <option value="GRADUADO">Graduado</option>
+                </select>
+              </div>
+
+              <div class="acciones-formulario">
+                <button type="submit" id="boton-guardar-estudiante">Guardar estudiante</button>
+                <button type="button" id="boton-cancelar-edicion" class="boton-secundario oculto">
+                  Cancelar edición
+                </button>
+              </div>
+            </form>
+            <p id="mensaje-formulario" class="mensaje-error" aria-live="polite"></p>
+          </section>
+
+          <section class="tarjeta tarjeta-tabla">
+            <div class="encabezado-tarjeta">
+              <h2>Estudiantes</h2>
+              <input id="campo-buscar" type="search" placeholder="Buscar por nombre, cuenta o correo..." />
+            </div>
+
+            <div class="contenedor-tabla">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cuenta</th>
+                    <th>Nombre completo</th>
+                    <th>Correo</th>
+                    <th>Carrera</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="cuerpo-tabla-estudiantes"></tbody>
+              </table>
+            </div>
+            <p id="texto-sin-resultados" class="texto-vacio oculto">
+              No se encontraron estudiantes con ese criterio.
+            </p>
+          </section>
+        </div>
+
+
+        <!-- SECCIÓN: DOCENTES -->
+        <div id="seccion-docentes" class="seccion-modulo oculto">
+          <section class="tarjeta tarjeta-formulario">
+            <div class="encabezado-tarjeta">
+              <h2 id="titulo-formulario-docente">Nuevo docente</h2>
+            </div>
+            <form id="formulario-docente" class="rejilla-formulario">
+              <input type="hidden" id="docente-id" />
+              <div class="campo">
+                <label for="docente-nombres">Nombres</label>
+                <input id="docente-nombres" required minlength="2" maxlength="80" />
+              </div>
+              <div class="campo">
+                <label for="docente-apellidos">Apellidos</label>
+                <input id="docente-apellidos" required minlength="2" maxlength="80" />
+              </div>
+              <div class="campo">
+                <label for="docente-empleado">Número de empleado</label>
+                <input id="docente-empleado" required placeholder="EMP-010" />
+              </div>
+              <div class="campo">
+                <label for="docente-correo">Correo</label>
+                <input id="docente-correo" type="email" required placeholder="docente@universidad.edu" />
+              </div>
+              <div class="campo">
+                <label for="docente-especialidad">Especialidad</label>
+                <input id="docente-especialidad" placeholder="Ingeniería de Software" />
+              </div>
+              <div class="campo">
+                <label for="docente-estado">Estado</label>
+                <select id="docente-estado">
+                  <option value="ACTIVO">Activo</option>
+                  <option value="INACTIVO">Inactivo</option>
+                </select>
+              </div>
+              <div class="acciones-formulario">
+                <button type="submit" id="boton-guardar-docente">Guardar docente</button>
+              </div>
+            </form>
+            <p id="mensaje-formulario-docente" class="mensaje-error"></p>
+          </section>
+          <!-- Tabla de Docentes -->
+          <section class="tarjeta tarjeta-tabla">
+            <div class="encabezado-tarjeta">
+              <h2>Docentes</h2>
+              <input id="campo-buscar-docentes" type="search" placeholder="Buscar por nombre o empleado..." />
+            </div>
+            <div class="contenedor-tabla">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nº Empleado</th>
+                    <th>Nombre completo</th>
+                    <th>Correo</th>
+                    <th>Especialidad</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="cuerpo-tabla-docentes"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- SECCIÓN: MÓDULOS EN CONSTRUCCIÓN -->
+        <div id="seccion-generica" class="seccion-modulo oculto">
+          <div class="tarjeta" style="padding: 32px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 12px;">🚧</div>
+            <h2 id="mensaje-modulo-pendiente" style="margin-bottom: 8px;">Módulo en construcción</h2>
+            <p id="subtitulo-modulo-pendiente" class="subtitulo" style="margin-bottom: 16px;">
+              Este módulo se conectará con su respectivo router en FastAPI.
+            </p>
+            <span class="chip-usuario" id="badge-api-ruta">Ruta API</span>
+          </div>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <script src="/app.js?v=2"></script>
+</body>
+
+</html>
