@@ -1,10 +1,11 @@
 import sqlite3
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.database import conexion_lectura, transaccion
 from app.helpers import filas_a_lista, obtener_o_404
 from app.schemas import EstudianteEntrada, EstudianteRespuesta, MensajeRespuesta
+from app.security import obtener_usuario_actual, requerir_rol
 
 
 router = APIRouter(prefix="/estudiantes", tags=["Estudiantes"])
@@ -25,7 +26,11 @@ def _validar_carrera(conexion, carrera_id: int) -> None:
         raise HTTPException(409, "No se puede asignar una carrera inactiva")
 
 
-@router.get("", response_model=list[EstudianteRespuesta])
+@router.get(
+    "",
+    response_model=list[EstudianteRespuesta],
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 def listar_estudiantes(
     buscar: str | None = Query(default=None, max_length=100),
     carrera_id: int | None = Query(default=None, gt=0),
@@ -62,7 +67,11 @@ def listar_estudiantes(
     return filas_a_lista(filas)
 
 
-@router.get("/{estudiante_id}", response_model=EstudianteRespuesta)
+@router.get(
+    "/{estudiante_id}",
+    response_model=EstudianteRespuesta,
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 def obtener_estudiante(estudiante_id: int):
     with conexion_lectura() as conexion:
         fila = conexion.execute(
@@ -73,7 +82,10 @@ def obtener_estudiante(estudiante_id: int):
     return dict(fila)
 
 
-@router.get("/{estudiante_id}/matriculas")
+@router.get(
+    "/{estudiante_id}/matriculas",
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 def listar_matriculas_estudiante(estudiante_id: int):
     """Reto opcional: Muestra los cursos en los que está matriculado un estudiante."""
     with conexion_lectura() as conexion:
@@ -108,7 +120,10 @@ def listar_matriculas_estudiante(estudiante_id: int):
 
 
 @router.post(
-    "", response_model=EstudianteRespuesta, status_code=status.HTTP_201_CREATED
+    "",
+    response_model=EstudianteRespuesta,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
 )
 def crear_estudiante(datos: EstudianteEntrada):
     try:
@@ -140,7 +155,11 @@ def crear_estudiante(datos: EstudianteEntrada):
         raise HTTPException(409, "La cuenta o el correo ya están registrados") from error
 
 
-@router.put("/{estudiante_id}", response_model=EstudianteRespuesta)
+@router.put(
+    "/{estudiante_id}",
+    response_model=EstudianteRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def actualizar_estudiante(estudiante_id: int, datos: EstudianteEntrada):
     try:
         with transaccion() as conexion:
@@ -175,7 +194,11 @@ def actualizar_estudiante(estudiante_id: int, datos: EstudianteEntrada):
         ) from error
 
 
-@router.delete("/{estudiante_id}", response_model=MensajeRespuesta)
+@router.delete(
+    "/{estudiante_id}",
+    response_model=MensajeRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def eliminar_estudiante(estudiante_id: int):
     try:
         with transaccion() as conexion:

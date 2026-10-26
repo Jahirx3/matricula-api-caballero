@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.database import conexion_lectura, transaccion
 from app.helpers import filas_a_lista, obtener_o_404
@@ -7,9 +7,14 @@ from app.schemas import (
     CalificacionRespuesta,
     MensajeRespuesta,
 )
+from app.security import obtener_usuario_actual, requerir_rol
 
 
-router = APIRouter(prefix="/calificaciones", tags=["Calificaciones"])
+router = APIRouter(
+    prefix="/calificaciones",
+    tags=["Calificaciones"],
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 
 
 def _respuesta_calificacion(fila) -> dict:
@@ -58,6 +63,7 @@ def obtener_calificacion(matricula_id: int):
     "/matricula/{matricula_id}",
     response_model=CalificacionRespuesta,
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(requerir_rol("ADMIN", "DOCENTE"))],
 )
 def guardar_calificacion(matricula_id: int, datos: CalificacionEntrada):
     nota_final = round(
@@ -122,7 +128,11 @@ def guardar_calificacion(matricula_id: int, datos: CalificacionEntrada):
         return _respuesta_calificacion(fila)
 
 
-@router.delete("/matricula/{matricula_id}", response_model=MensajeRespuesta)
+@router.delete(
+    "/matricula/{matricula_id}",
+    response_model=MensajeRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def eliminar_calificacion(matricula_id: int):
     with transaccion() as conexion:
         obtener_o_404(conexion, "matriculas", matricula_id, "Matrícula")
@@ -136,4 +146,3 @@ def eliminar_calificacion(matricula_id: int):
             (matricula_id,),
         )
     return {"mensaje": "Calificación eliminada y matrícula reabierta"}
-

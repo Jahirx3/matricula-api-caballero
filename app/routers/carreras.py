@@ -1,16 +1,21 @@
 import sqlite3
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.database import conexion_lectura, transaccion
 from app.helpers import filas_a_lista, obtener_o_404
 from app.schemas import CarreraEntrada, CarreraRespuesta, MensajeRespuesta
+from app.security import obtener_usuario_actual, requerir_rol
 
 
 router = APIRouter(prefix="/carreras", tags=["Carreras"])
 
 
-@router.get("", response_model=list[CarreraRespuesta])
+@router.get(
+    "",
+    response_model=list[CarreraRespuesta],
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 def listar_carreras(
     buscar: str | None = Query(default=None, max_length=100),
     solo_activas: bool = False,
@@ -34,13 +39,22 @@ def listar_carreras(
     return filas_a_lista(filas)
 
 
-@router.get("/{carrera_id}", response_model=CarreraRespuesta)
+@router.get(
+    "/{carrera_id}",
+    response_model=CarreraRespuesta,
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 def obtener_carrera(carrera_id: int):
     with conexion_lectura() as conexion:
         return dict(obtener_o_404(conexion, "carreras", carrera_id, "Carrera"))
 
 
-@router.post("", response_model=CarreraRespuesta, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=CarreraRespuesta,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def crear_carrera(datos: CarreraEntrada):
     try:
         with transaccion() as conexion:
@@ -59,7 +73,11 @@ def crear_carrera(datos: CarreraEntrada):
         raise HTTPException(409, "El código o nombre de la carrera ya existe") from error
 
 
-@router.put("/{carrera_id}", response_model=CarreraRespuesta)
+@router.put(
+    "/{carrera_id}",
+    response_model=CarreraRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def actualizar_carrera(carrera_id: int, datos: CarreraEntrada):
     try:
         with transaccion() as conexion:
@@ -87,7 +105,11 @@ def actualizar_carrera(carrera_id: int, datos: CarreraEntrada):
         raise HTTPException(409, "El código o nombre pertenece a otra carrera") from error
 
 
-@router.delete("/{carrera_id}", response_model=MensajeRespuesta)
+@router.delete(
+    "/{carrera_id}",
+    response_model=MensajeRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def eliminar_carrera(carrera_id: int):
     try:
         with transaccion() as conexion:
@@ -98,4 +120,3 @@ def eliminar_carrera(carrera_id: int):
         raise HTTPException(
             409, "No se puede eliminar: la carrera tiene estudiantes o asignaturas"
         ) from error
-

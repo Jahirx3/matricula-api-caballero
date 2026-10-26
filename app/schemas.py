@@ -27,6 +27,15 @@ class UsuarioRespuesta(BaseModel):
     rol: RolUsuario
 
 
+class UsuarioLoginRespuesta(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    id: int
+    usuario: str
+    nombre_completo: str
+    rol: RolUsuario
+
+
 class CarreraEntrada(BaseModel):
     codigo: str = Field(min_length=2, max_length=10)
     nombre: str = Field(min_length=4, max_length=120)

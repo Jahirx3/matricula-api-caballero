@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sistema Académico</title>
-  <link rel="stylesheet" href="/styles.css?v=2" />
+  <link rel="stylesheet" href="/styles.css?v=10" />
 </head>
 
 <body>
@@ -74,8 +74,6 @@
           <span class="icono">🏛️</span>
           <span>Carreras</span>
         </a>
-
-
         <a href="#aulas" class="nav-item" data-seccion="aulas">
           <span class="icono">🏫</span>
           <span>Aulas</span>
@@ -91,15 +89,25 @@
           <span class="icono">📝</span>
           <span>Matrículas</span>
         </a>
-
+      </nav>
     </aside>
+
+    <!-- Overlay oscuro para cerrar la sidebar en pantallas móviles al tocar afuera -->
+    <div id="overlay-sidebar" class="overlay-sidebar oculto"></div>
 
     <!-- 2. CONTENIDO DERECHO -->
     <div class="panel-derecho">
       <header class="barra-superior">
-        <div>
-          <p class="etiqueta" id="subtitulo-seccion">SISTEMA ACADÉMICO</p>
-          <h1 id="titulo-seccion-actual">Panel general</h1>
+        <div class="bloque-titulo-barra">
+          <button id="boton-menu-movil" class="boton-menu-movil" aria-label="Abrir menú de navegación" type="button">
+            <span class="linea-hamburguesa"></span>
+            <span class="linea-hamburguesa"></span>
+            <span class="linea-hamburguesa"></span>
+          </button>
+          <div>
+            <p class="etiqueta" id="subtitulo-seccion">SISTEMA ACADÉMICO</p>
+            <h1 id="titulo-seccion-actual">Panel general</h1>
+          </div>
         </div>
         <div class="acciones-barra">
           <span id="chip-usuario" class="chip-usuario"></span>
@@ -177,8 +185,25 @@
 
           <section class="tarjeta tarjeta-tabla">
             <div class="encabezado-tarjeta">
-              <h2>Estudiantes</h2>
-              <input id="campo-buscar" type="search" placeholder="Buscar por nombre, cuenta o correo..." />
+              <div>
+                <h2>Estudiantes</h2>
+                <p class="descripcion-seccion">Listado de alumnos registrados y estado de matrícula.</p>
+              </div>
+              <div class="filtros-barra">
+                <input id="campo-buscar" type="search" placeholder="Buscar por nombre, cuenta o correo..." aria-label="Buscar estudiantes" />
+                <select id="filtro-estudiante-carrera" aria-label="Filtrar por carrera">
+                  <option value="">Todas las carreras</option>
+                </select>
+                <select id="filtro-estudiante-estado" aria-label="Filtrar por estado">
+                  <option value="">Todos los estados</option>
+                  <option value="ACTIVO">Activo</option>
+                  <option value="INACTIVO">Inactivo</option>
+                  <option value="GRADUADO">Graduado</option>
+                </select>
+                <button id="boton-limpiar-filtros-estudiantes" type="button" class="boton-secundario boton-chico" title="Restablecer filtros">
+                  Limpiar
+                </button>
+              </div>
             </div>
 
             <div class="contenedor-tabla">
@@ -201,7 +226,6 @@
             </p>
           </section>
         </div>
-
 
         <!-- SECCIÓN: DOCENTES -->
         <div id="seccion-docentes" class="seccion-modulo oculto">
@@ -240,15 +264,31 @@
               </div>
               <div class="acciones-formulario">
                 <button type="submit" id="boton-guardar-docente">Guardar docente</button>
+                <button type="button" id="boton-cancelar-docente" class="boton-secundario oculto">
+                  Cancelar edición
+                </button>
               </div>
             </form>
-            <p id="mensaje-formulario-docente" class="mensaje-error"></p>
+            <p id="mensaje-formulario-docente" class="mensaje-error" aria-live="polite"></p>
           </section>
-          <!-- Tabla de Docentes -->
+
           <section class="tarjeta tarjeta-tabla">
             <div class="encabezado-tarjeta">
-              <h2>Docentes</h2>
-              <input id="campo-buscar-docentes" type="search" placeholder="Buscar por nombre o empleado..." />
+              <div>
+                <h2>Docentes</h2>
+                <p class="descripcion-seccion">Cuerpo docente, especialidades y carga académica de clases.</p>
+              </div>
+              <div class="filtros-barra">
+                <input id="campo-buscar-docentes" type="search" placeholder="Buscar por nombre o empleado..." aria-label="Buscar docentes" />
+                <select id="filtro-docente-estado" aria-label="Filtrar por estado">
+                  <option value="">Todos los estados</option>
+                  <option value="ACTIVO">Activo</option>
+                  <option value="INACTIVO">Inactivo</option>
+                </select>
+                <button id="boton-limpiar-filtros-docentes" type="button" class="boton-secundario boton-chico" title="Restablecer filtros">
+                  Limpiar
+                </button>
+              </div>
             </div>
             <div class="contenedor-tabla">
               <table>
@@ -259,11 +299,90 @@
                     <th>Correo</th>
                     <th>Especialidad</th>
                     <th>Estado</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody id="cuerpo-tabla-docentes"></tbody>
               </table>
             </div>
+            <p id="texto-sin-resultados-docentes" class="texto-vacio oculto">
+              No se encontraron docentes con ese criterio.
+            </p>
+          </section>
+        </div>
+
+        <!-- SECCIÓN: CARRERAS -->
+        <div id="seccion-carreras" class="seccion-modulo oculto">
+          <section class="tarjeta tarjeta-formulario">
+            <div class="encabezado-tarjeta">
+              <h2 id="titulo-formulario-carrera">Nueva carrera</h2>
+            </div>
+            <form id="formulario-carrera" class="rejilla-formulario">
+              <input type="hidden" id="carrera-form-id" />
+              <div class="campo">
+                <label for="carrera-codigo">Código</label>
+                <input id="carrera-codigo" required minlength="2" maxlength="10" placeholder="IS" />
+              </div>
+              <div class="campo">
+                <label for="carrera-nombre">Nombre</label>
+                <input id="carrera-nombre" required minlength="4" maxlength="120" placeholder="Ingeniería en Sistemas" />
+              </div>
+              <div class="campo">
+                <label for="carrera-duracion">Duración (años)</label>
+                <input id="carrera-duracion" type="number" required min="1" max="10" value="4" />
+              </div>
+              <div class="campo">
+                <label for="carrera-activo">Estado</label>
+                <select id="carrera-activo">
+                  <option value="true">Activa</option>
+                  <option value="false">Inactiva</option>
+                </select>
+              </div>
+              <div class="acciones-formulario">
+                <button type="submit" id="boton-guardar-carrera">Guardar carrera</button>
+                <button type="button" id="boton-cancelar-carrera" class="boton-secundario oculto">
+                  Cancelar edición
+                </button>
+              </div>
+            </form>
+            <p id="mensaje-formulario-carrera" class="mensaje-error" aria-live="polite"></p>
+          </section>
+
+          <section class="tarjeta tarjeta-tabla">
+            <div class="encabezado-tarjeta">
+              <div>
+                <h2>Carreras</h2>
+                <p class="descripcion-seccion">Planes de estudio y carreras activas.</p>
+              </div>
+              <div class="filtros-barra">
+                <input id="campo-buscar-carreras" type="search" placeholder="Buscar por código o nombre..." aria-label="Buscar carreras" />
+                <select id="filtro-carrera-estado" aria-label="Filtrar por estado">
+                  <option value="">Todos los estados</option>
+                  <option value="true">Activas</option>
+                  <option value="false">Inactivas</option>
+                </select>
+                <button id="boton-limpiar-filtros-carreras" type="button" class="boton-secundario boton-chico" title="Restablecer filtros">
+                  Limpiar
+                </button>
+              </div>
+            </div>
+            <div class="contenedor-tabla">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Duración</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="cuerpo-tabla-carreras"></tbody>
+              </table>
+            </div>
+            <p id="texto-sin-resultados-carreras" class="texto-vacio oculto">
+              No se encontraron carreras con ese criterio.
+            </p>
           </section>
         </div>
 
@@ -280,9 +399,115 @@
         </div>
       </main>
     </div>
+
+    <!-- ==================== MODAL: MATRÍCULAS DE ESTUDIANTE ==================== -->
+    <div id="modal-matriculas-estudiante" class="modal-backdrop oculto" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-estudiante">
+      <div class="modal-contenedor">
+        <header class="modal-header">
+          <div class="modal-info-principal">
+            <span class="modal-icono">👨‍🎓</span>
+            <div>
+              <h2 id="titulo-modal-estudiante">Matrículas del estudiante</h2>
+              <p id="subtitulo-modal-estudiante" class="modal-subtitulo"></p>
+            </div>
+          </div>
+          <button id="boton-cerrar-modal-estudiante" class="boton-cerrar-modal" aria-label="Cerrar modal" type="button">&times;</button>
+        </header>
+
+        <div class="modal-body">
+          <div class="modal-resumen" id="resumen-matriculas-estudiante">
+            <div class="pastilla-resumen">
+              <span class="resumen-numero" id="total-asignaturas-estudiante">0</span>
+              <span class="resumen-etiqueta">Asignaturas inscritas</span>
+            </div>
+            <div class="pastilla-resumen">
+              <span class="resumen-numero" id="total-uv-estudiante">0</span>
+              <span class="resumen-etiqueta">Unidades valorativas (UV)</span>
+            </div>
+          </div>
+
+          <div class="contenedor-tabla tabla-modal">
+            <table>
+              <thead>
+                <tr>
+                  <th>Asignatura</th>
+                  <th>Sección</th>
+                  <th>Período</th>
+                  <th>Docente</th>
+                  <th>Horario / Días</th>
+                  <th>Nota Final</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpo-tabla-matriculas-estudiante"></tbody>
+            </table>
+          </div>
+          <p id="mensaje-vacio-matriculas" class="texto-vacio oculto">
+            Este estudiante no tiene asignaturas matriculadas actualmente.
+          </p>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="boton-secundario" id="boton-cerrar-modal-estudiante-pie">Cerrar</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- ==================== MODAL: CLASES DEL DOCENTE ==================== -->
+    <div id="modal-clases-docente" class="modal-backdrop oculto" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-docente">
+      <div class="modal-contenedor">
+        <header class="modal-header">
+          <div class="modal-info-principal">
+            <span class="modal-icono">👨‍🏫</span>
+            <div>
+              <h2 id="titulo-modal-docente">Clases asignadas al docente</h2>
+              <p id="subtitulo-modal-docente" class="modal-subtitulo"></p>
+            </div>
+          </div>
+          <button id="boton-cerrar-modal-docente" class="boton-cerrar-modal" aria-label="Cerrar modal" type="button">&times;</button>
+        </header>
+
+        <div class="modal-body">
+          <div class="modal-resumen" id="resumen-clases-docente">
+            <div class="pastilla-resumen">
+              <span class="resumen-numero" id="total-clases-docente">0</span>
+              <span class="resumen-etiqueta">Secciones a impartir</span>
+            </div>
+            <div class="pastilla-resumen">
+              <span class="resumen-numero" id="total-alumnos-docente">0</span>
+              <span class="resumen-etiqueta">Alumnos inscritos</span>
+            </div>
+          </div>
+
+          <div class="contenedor-tabla tabla-modal">
+            <table>
+              <thead>
+                <tr>
+                  <th>Asignatura</th>
+                  <th>Sección</th>
+                  <th>Período</th>
+                  <th>Horario / Días</th>
+                  <th>Aula</th>
+                  <th>Cupos (Matriculados/Total)</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpo-tabla-clases-docente"></tbody>
+            </table>
+          </div>
+          <p id="mensaje-vacio-clases-docente" class="texto-vacio oculto">
+            Este docente no tiene secciones asignadas en ningún período.
+          </p>
+        </div>
+
+        <footer class="modal-footer">
+          <button type="button" class="boton-secundario" id="boton-cerrar-modal-docente-pie">Cerrar</button>
+        </footer>
+      </div>
+    </div>
   </section>
 
-  <script src="/app.js?v=2"></script>
+  <script src="/app.js?v=11"></script>
 </body>
 
 </html>

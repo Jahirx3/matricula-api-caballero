@@ -1,12 +1,17 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.database import conexion_lectura, transaccion
 from app.helpers import filas_a_lista, obtener_o_404
 from app.schemas import MatriculaEntrada, MatriculaRespuesta, MensajeRespuesta
+from app.security import obtener_usuario_actual, requerir_rol
 from app.services.matricula_service import validar_nueva_matricula
 
 
-router = APIRouter(prefix="/matriculas", tags=["Matrículas"])
+router = APIRouter(
+    prefix="/matriculas",
+    tags=["Matrículas"],
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 
 
 CONSULTA_BASE = """
@@ -129,11 +134,14 @@ def cancelar_matricula(matricula_id: int):
     return {"mensaje": "Matrícula cancelada; el cupo quedó disponible"}
 
 
-@router.delete("/{matricula_id}", response_model=MensajeRespuesta)
+@router.delete(
+    "/{matricula_id}",
+    response_model=MensajeRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def eliminar_matricula(matricula_id: int):
     """Ruta didáctica; en producción normalmente se conservaría el historial."""
     with transaccion() as conexion:
         obtener_o_404(conexion, "matriculas", matricula_id, "Matrícula")
         conexion.execute("DELETE FROM matriculas WHERE id = ?", (matricula_id,))
     return {"mensaje": "Matrícula y su calificación fueron eliminadas"}
-

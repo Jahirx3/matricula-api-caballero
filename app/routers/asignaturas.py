@@ -1,10 +1,11 @@
 import sqlite3
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.database import conexion_lectura, transaccion
 from app.helpers import filas_a_lista, obtener_o_404
 from app.schemas import AsignaturaEntrada, AsignaturaRespuesta, MensajeRespuesta
+from app.security import obtener_usuario_actual, requerir_rol
 
 
 router = APIRouter(prefix="/asignaturas", tags=["Asignaturas"])
@@ -56,7 +57,11 @@ def _validar_relaciones(
             raise HTTPException(409, "El requisito produciría una dependencia circular")
 
 
-@router.get("", response_model=list[AsignaturaRespuesta])
+@router.get(
+    "",
+    response_model=list[AsignaturaRespuesta],
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 def listar_asignaturas(
     buscar: str | None = Query(default=None, max_length=100),
     carrera_id: int | None = Query(default=None, gt=0),
@@ -81,7 +86,11 @@ def listar_asignaturas(
     return filas_a_lista(filas)
 
 
-@router.get("/{asignatura_id}", response_model=AsignaturaRespuesta)
+@router.get(
+    "/{asignatura_id}",
+    response_model=AsignaturaRespuesta,
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 def obtener_asignatura(asignatura_id: int):
     with conexion_lectura() as conexion:
         fila = conexion.execute(
@@ -93,7 +102,10 @@ def obtener_asignatura(asignatura_id: int):
 
 
 @router.post(
-    "", response_model=AsignaturaRespuesta, status_code=status.HTTP_201_CREATED
+    "",
+    response_model=AsignaturaRespuesta,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
 )
 def crear_asignatura(datos: AsignaturaEntrada):
     try:
@@ -123,7 +135,11 @@ def crear_asignatura(datos: AsignaturaEntrada):
         raise HTTPException(409, "El código de la asignatura ya existe") from error
 
 
-@router.put("/{asignatura_id}", response_model=AsignaturaRespuesta)
+@router.put(
+    "/{asignatura_id}",
+    response_model=AsignaturaRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def actualizar_asignatura(asignatura_id: int, datos: AsignaturaEntrada):
     try:
         with transaccion() as conexion:
@@ -156,7 +172,11 @@ def actualizar_asignatura(asignatura_id: int, datos: AsignaturaEntrada):
         raise HTTPException(409, "El código pertenece a otra asignatura") from error
 
 
-@router.delete("/{asignatura_id}", response_model=MensajeRespuesta)
+@router.delete(
+    "/{asignatura_id}",
+    response_model=MensajeRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def eliminar_asignatura(asignatura_id: int):
     try:
         with transaccion() as conexion:
@@ -167,4 +187,3 @@ def eliminar_asignatura(asignatura_id: int):
         raise HTTPException(
             409, "No se puede eliminar: la asignatura tiene secciones"
         ) from error
-

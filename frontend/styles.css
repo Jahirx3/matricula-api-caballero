@@ -185,16 +185,57 @@ h2 {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 32px;
+  padding: 18px clamp(16px, 3vw, 32px);
   background: var(--superficie);
   border-bottom: 1px solid var(--linea);
   flex-wrap: wrap;
 }
 
+.bloque-titulo-barra {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.boton-menu-movil {
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 38px;
+  height: 38px;
+  padding: 8px 6px;
+  background: var(--pagina);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.boton-menu-movil .linea-hamburguesa {
+  width: 100%;
+  height: 2px;
+  background-color: var(--tinta-primaria);
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.boton-menu-movil:hover {
+  border-color: var(--acento);
+}
+
+.overlay-sidebar {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 150;
+  transition: opacity 0.25s ease;
+}
+
 .acciones-barra {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .chip-usuario {
@@ -215,6 +256,7 @@ h2 {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .boton-secundario:hover {
@@ -222,28 +264,22 @@ h2 {
   color: var(--acento);
 }
 
+.boton-chico {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
 .contenido {
-  max-width: 1080px;
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 28px 32px 48px;
+  padding: clamp(16px, 2.5vw, 32px);
 }
 
 .fila-tarjetas {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 12px;
-}
-
-@media (max-width: 860px) {
-  .fila-tarjetas {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 520px) {
-  .fila-tarjetas {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
 }
 
 .tarjeta-kpi {
@@ -290,17 +326,35 @@ h2 {
   flex-wrap: wrap;
 }
 
-#campo-buscar {
+.descripcion-seccion {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--tinta-secundaria);
+}
+
+.filtros-barra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.filtros-barra input,
+.filtros-barra select {
   padding: 8px 12px;
   border: 1px solid var(--borde);
   border-radius: 8px;
   background: var(--pagina);
   color: var(--tinta-primaria);
   font-size: 13px;
-  min-width: 240px;
+  font-family: inherit;
+  flex: 1 1 180px;
+  min-width: 140px;
 }
 
-#campo-buscar:focus {
+.filtros-barra input:focus,
+.filtros-barra select:focus {
   outline: none;
   border-color: var(--acento);
   box-shadow: 0 0 0 3px var(--acento-suave);
@@ -392,14 +446,8 @@ tbody tr:hover td {
 
 .rejilla-formulario {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 14px 16px;
-}
-
-@media (max-width: 640px) {
-  .rejilla-formulario {
-    grid-template-columns: 1fr;
-  }
 }
 
 .campo label {
@@ -475,7 +523,7 @@ tbody tr:hover td {
 }
 
 .boton-icono {
-  padding: 5px 10px;
+  padding: 6px 10px;
   border: 1px solid var(--borde);
   border-radius: 6px;
   background: var(--superficie);
@@ -483,11 +531,26 @@ tbody tr:hover td {
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .boton-icono:hover {
   border-color: var(--acento);
   color: var(--acento);
+}
+
+.boton-icono.info {
+  background: var(--acento-suave);
+  color: var(--acento);
+  border-color: rgba(42, 120, 214, 0.25);
+}
+
+.boton-icono.info:hover {
+  background: var(--acento);
+  color: #ffffff;
 }
 
 .boton-icono.peligro:hover {
@@ -501,7 +564,7 @@ tbody tr:hover td {
   width: 100%;
 }
 
-/* 2. Barra lateral */
+
 .sidebar {
   width: 260px;
   min-width: 260px;
@@ -594,18 +657,170 @@ tbody tr:hover td {
   /* Evita desbordamiento horizontal */
 }
 
-/* Responsive: en pantallas pequeñas */
-@media (max-width: 768px) {
-  .vista-dashboard {
-    flex-direction: column;
+/* Responsive: Drawer en pantallas pequeñas y colapso fluido */
+@media (max-width: 900px) {
+  .boton-menu-movil {
+    display: flex;
   }
 
   .sidebar {
-    width: 100%;
-    min-width: 100%;
-    height: auto;
-    position: relative;
-    border-right: none;
-    border-bottom: 1px solid var(--linea);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    width: 270px;
+    min-width: 270px;
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.2);
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  .sidebar.abierta {
+    transform: translateX(0);
+  }
+
+  .barra-superior {
+    padding: 14px 18px;
+  }
+
+  .acciones-barra {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* ==================== ESTILOS DE MODALES ==================== */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: clamp(12px, 3vw, 24px);
+  animation: fadeInModal 0.18s ease-out;
+}
+
+.modal-contenedor {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 920px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.22);
+  animation: scaleInModal 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleInModal {
+  from { transform: scale(0.96) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.modal-info-principal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-icono {
+  font-size: 28px;
+}
+
+.modal-subtitulo {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--tinta-secundaria);
+}
+
+.boton-cerrar-modal {
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--tinta-tenue);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.boton-cerrar-modal:hover {
+  color: var(--tinta-primaria);
+  background: var(--pagina);
+}
+
+.modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.pastilla-resumen {
+  background: var(--pagina);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.resumen-numero {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--acento);
+}
+
+.resumen-etiqueta {
+  font-size: 12px;
+  color: var(--tinta-secundaria);
+}
+
+.tabla-modal {
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+}
+
+.tabla-modal thead th {
+  background: var(--pagina);
+  padding: 10px 12px;
+}
+
+.tabla-modal tbody td {
+  padding: 10px 12px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 24px;
+  border-top: 1px solid var(--linea);
+  background: var(--pagina);
 }

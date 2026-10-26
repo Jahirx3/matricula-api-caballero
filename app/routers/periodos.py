@@ -1,10 +1,11 @@
 import sqlite3
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.database import conexion_lectura, transaccion
 from app.helpers import obtener_o_404
 from app.schemas import MensajeRespuesta, PeriodoEntrada, PeriodoRespuesta
+from app.security import obtener_usuario_actual, requerir_rol
 
 
 router = APIRouter(prefix="/periodos", tags=["Períodos académicos"])
@@ -16,7 +17,11 @@ def _periodo_respuesta(fila) -> dict:
     return datos
 
 
-@router.get("", response_model=list[PeriodoRespuesta])
+@router.get(
+    "",
+    response_model=list[PeriodoRespuesta],
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 def listar_periodos():
     with conexion_lectura() as conexion:
         filas = conexion.execute(
@@ -25,7 +30,11 @@ def listar_periodos():
     return [_periodo_respuesta(fila) for fila in filas]
 
 
-@router.get("/{periodo_id}", response_model=PeriodoRespuesta)
+@router.get(
+    "/{periodo_id}",
+    response_model=PeriodoRespuesta,
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 def obtener_periodo(periodo_id: int):
     with conexion_lectura() as conexion:
         fila = obtener_o_404(conexion, "periodos", periodo_id, "Período")
@@ -39,7 +48,12 @@ def _desactivar_otros(conexion, periodo_id: int | None = None) -> None:
         conexion.execute("UPDATE periodos SET activo = 0 WHERE id <> ?", (periodo_id,))
 
 
-@router.post("", response_model=PeriodoRespuesta, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=PeriodoRespuesta,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def crear_periodo(datos: PeriodoEntrada):
     try:
         with transaccion() as conexion:
@@ -67,7 +81,11 @@ def crear_periodo(datos: PeriodoEntrada):
         raise HTTPException(409, "Ese período académico ya existe") from error
 
 
-@router.put("/{periodo_id}", response_model=PeriodoRespuesta)
+@router.put(
+    "/{periodo_id}",
+    response_model=PeriodoRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def actualizar_periodo(periodo_id: int, datos: PeriodoEntrada):
     try:
         with transaccion() as conexion:
@@ -97,7 +115,11 @@ def actualizar_periodo(periodo_id: int, datos: PeriodoEntrada):
         raise HTTPException(409, "Ese período académico ya existe") from error
 
 
-@router.delete("/{periodo_id}", response_model=MensajeRespuesta)
+@router.delete(
+    "/{periodo_id}",
+    response_model=MensajeRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def eliminar_periodo(periodo_id: int):
     try:
         with transaccion() as conexion:
@@ -108,4 +130,3 @@ def eliminar_periodo(periodo_id: int):
         raise HTTPException(
             409, "No se puede eliminar: el período tiene secciones"
         ) from error
-

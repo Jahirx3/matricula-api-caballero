@@ -1,20 +1,16 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.database import conexion_lectura, hash_clave
-from app.schemas import UsuarioLogin, UsuarioRespuesta
+from app.schemas import UsuarioLogin, UsuarioLoginRespuesta, UsuarioRespuesta
+from app.security import crear_token_acceso, obtener_usuario_actual
 
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
 
-@router.post("/login", response_model=UsuarioRespuesta)
+@router.post("/login", response_model=UsuarioLoginRespuesta)
 def iniciar_sesion(datos: UsuarioLogin):
-    """Valida usuario y contraseña contra la tabla 'usuarios'.
-
-    Este endpoint es la base de la pantalla de login del cliente de
-    escritorio. No usa tokens ni sesiones (eso se puede agregar más
-    adelante, por ejemplo con JWT); por ahora el cliente simplemente
-    guarda en memoria los datos del usuario que inició sesión.
+    """VALIDAR
     """
     with conexion_lectura() as conexion:
         fila = conexion.execute(
@@ -22,14 +18,39 @@ def iniciar_sesion(datos: UsuarioLogin):
         ).fetchone()
 
     if fila is None or fila["clave_hash"] != hash_clave(datos.clave):
-        raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuario o contraseña incorrectos",
+        )
 
     if not fila["activo"]:
-        raise HTTPException(status_code=403, detail="Este usuario está inactivo")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Este usuario está inactivo",
+        )
+
+    # Creamos el token JWT con los datos relevantes del usuario
+    token = crear_token_acceso({
+        "sub": fila["usuario"],
+        "id": fila["id"],
+        "rol": fila["rol"],
+        "nombre": fila["nombre_completo"],
+    })
 
     return {
+        "access_token": token,
+        "token_type": "bearer",
         "id": fila["id"],
         "usuario": fila["usuario"],
         "nombre_completo": fila["nombre_completo"],
         "rol": fila["rol"],
     }
+
+
+@router.get("/yo", response_model=UsuarioRespuesta)
+def obtener_perfil_actual(usuario: dict = Depends(obtener_usuario_actual)):
+    """Retorna la información del usuario actualmente autenticado mediante su token JWT.
+
+    Permite al frontend validar si la sesión sigue activa al recargar la aplicación.
+    """
+    return usuario

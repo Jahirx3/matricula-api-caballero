@@ -1,16 +1,21 @@
 import sqlite3
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.database import conexion_lectura, transaccion
 from app.helpers import filas_a_lista, obtener_o_404
 from app.schemas import AulaEntrada, AulaRespuesta, MensajeRespuesta
+from app.security import obtener_usuario_actual, requerir_rol
 
 
 router = APIRouter(prefix="/aulas", tags=["Aulas"])
 
 
-@router.get("", response_model=list[AulaRespuesta])
+@router.get(
+    "",
+    response_model=list[AulaRespuesta],
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 def listar_aulas(solo_activas: bool = False):
     where = "WHERE activo = 1" if solo_activas else ""
     with conexion_lectura() as conexion:
@@ -21,13 +26,22 @@ def listar_aulas(solo_activas: bool = False):
     return filas_a_lista(filas)
 
 
-@router.get("/{aula_id}", response_model=AulaRespuesta)
+@router.get(
+    "/{aula_id}",
+    response_model=AulaRespuesta,
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 def obtener_aula(aula_id: int):
     with conexion_lectura() as conexion:
         return dict(obtener_o_404(conexion, "aulas", aula_id, "Aula"))
 
 
-@router.post("", response_model=AulaRespuesta, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=AulaRespuesta,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def crear_aula(datos: AulaEntrada):
     try:
         with transaccion() as conexion:
@@ -47,7 +61,11 @@ def crear_aula(datos: AulaEntrada):
         raise HTTPException(409, "El código del aula ya existe") from error
 
 
-@router.put("/{aula_id}", response_model=AulaRespuesta)
+@router.put(
+    "/{aula_id}",
+    response_model=AulaRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def actualizar_aula(aula_id: int, datos: AulaEntrada):
     try:
         with transaccion() as conexion:
@@ -74,11 +92,14 @@ def actualizar_aula(aula_id: int, datos: AulaEntrada):
         raise HTTPException(409, "El código pertenece a otra aula") from error
 
 
-@router.delete("/{aula_id}", response_model=MensajeRespuesta)
+@router.delete(
+    "/{aula_id}",
+    response_model=MensajeRespuesta,
+    dependencies=[Depends(requerir_rol("ADMIN"))],
+)
 def eliminar_aula(aula_id: int):
     with transaccion() as conexion:
         obtener_o_404(conexion, "aulas", aula_id, "Aula")
         # ON DELETE SET NULL permite conservar la sección aunque desaparezca el aula.
         conexion.execute("DELETE FROM aulas WHERE id = ?", (aula_id,))
     return {"mensaje": "Aula eliminada; sus secciones quedaron sin aula asignada"}
-

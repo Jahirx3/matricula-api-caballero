@@ -1,10 +1,15 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.database import conexion_lectura
 from app.helpers import filas_a_lista, obtener_o_404
+from app.security import obtener_usuario_actual
 
 
-router = APIRouter(prefix="/reportes", tags=["Reportes y consultas avanzadas"])
+router = APIRouter(
+    prefix="/reportes",
+    tags=["Reportes y consultas avanzadas"],
+    dependencies=[Depends(obtener_usuario_actual)],
+)
 
 
 @router.get("/dashboard")
@@ -182,4 +187,3 @@ def carga_docente(
         "total_secciones": len(secciones),
         "secciones": filas_a_lista(secciones),
     }
-
